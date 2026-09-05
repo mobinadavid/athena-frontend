@@ -12,13 +12,14 @@ import {
   Wallet,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { useDashboardSummary } from "@/lib/hooks/use-dashboard";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/payments", label: "Payments", icon: CreditCard, soon: true },
-  { href: "/wallets", label: "Wallets", icon: Wallet, soon: true },
-  { href: "/notifications", label: "Notifications", icon: Bell, soon: true },
+  { href: "/payments", label: "Payments", icon: CreditCard },
+  { href: "/wallets", label: "Wallets", icon: Wallet },
+  { href: "/notifications", label: "Notifications", icon: Bell, badgeKey: "notifications" as const },
 ];
 
 const SETTINGS = [
@@ -31,48 +32,46 @@ function NavLink({
   href,
   label,
   icon: Icon,
-  soon,
+  badge,
   onNavigate,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  soon?: boolean;
+  badge?: number;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(`${href}/`);
-
-  if (soon) {
-    return (
-      <div className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-muted-foreground/70">
-        <span className="flex items-center gap-2">
-          <Icon className="size-4" />
-          {label}
-        </span>
-        <span className="text-[10px] uppercase tracking-wide">Soon</span>
-      </div>
-    );
-  }
 
   return (
     <Link
       href={href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors",
+        "flex items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors",
         active
           ? "bg-primary/10 font-medium text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
-      <Icon className="size-4" />
-      {label}
+      <span className="flex items-center gap-2">
+        <Icon className="size-4" />
+        {label}
+      </span>
+      {badge ? (
+        <span className="rounded-full bg-violet-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
     </Link>
   );
 }
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const summary = useDashboardSummary();
+  const unread = summary.data?.unread_notifications ?? 0;
+
   return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-5">
@@ -81,7 +80,14 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 space-y-6 px-3">
         <div className="space-y-1">
           {NAV.map((item) => (
-            <NavLink key={item.href} {...item} onNavigate={onNavigate} />
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              icon={item.icon}
+              badge={item.badgeKey === "notifications" ? unread : undefined}
+              onNavigate={onNavigate}
+            />
           ))}
         </div>
         <div>
