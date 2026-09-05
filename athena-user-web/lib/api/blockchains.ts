@@ -14,7 +14,7 @@ export const blockchainsApi = {
     const data = await apiClient.get<{
       blockchains?: Paginated<Blockchain> | Blockchain[];
       blockchain?: Paginated<Blockchain> | Blockchain[];
-    }>(`/blockchains${toQuery({ page: 1, page_size: 100 })}`);
+    }>(`/blockchain${toQuery({ page: 1, page_size: 100 })}`);
     const items = asList(data.blockchains ?? data.blockchain);
     return items.filter((chain) => chain.is_active);
   },
