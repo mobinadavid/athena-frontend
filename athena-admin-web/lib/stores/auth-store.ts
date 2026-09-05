@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type PendingFlow = "register" | "login-otp" | "recover";
+export type PendingFlow = "recover";
 
 interface PendingOtp {
   flow: PendingFlow;

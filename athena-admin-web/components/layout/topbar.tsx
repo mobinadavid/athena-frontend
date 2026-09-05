@@ -38,7 +38,7 @@ export function Topbar() {
         </SheetContent>
       </Sheet>
 
-      <div className="hidden text-sm font-medium lg:block">Athena</div>
+      <div className="hidden text-sm font-medium lg:block">Athena Admin</div>
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
         <DropdownMenu>

@@ -12,7 +12,7 @@ export default function DashboardPage() {
     <div>
       <PageHeader
         title="Dashboard"
-        description="You're signed in to the admin console. Management pages arrive in Phase 3."
+        description="You're signed in to the admin console. Charts and management screens arrive in Phase 4."
       />
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

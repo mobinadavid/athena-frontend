@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Blocks,
+  Compass,
   CreditCard,
   LayoutDashboard,
   MonitorSmartphone,
@@ -17,12 +18,13 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/wallet-addresses", label: "Wallet addresses", icon: Wallet, soon: true },
+  { href: "/wallet-addresses", label: "Wallet Addresses", icon: Wallet, soon: true },
   { href: "/blockchains", label: "Blockchains", icon: Blocks, soon: true },
+  { href: "/blockchain-explorers", label: "Blockchain Explorers", icon: Compass, soon: true },
   { href: "/payments", label: "Payments", icon: CreditCard, soon: true },
   { href: "/users", label: "Users", icon: Users, soon: true },
   { href: "/admins", label: "Admins", icon: UserRound, soon: true },
-  { href: "/roles", label: "Roles", icon: Shield, soon: true },
+  { href: "/roles", label: "Roles & Permissions", icon: Shield, soon: true },
 ];
 
 const SETTINGS = [

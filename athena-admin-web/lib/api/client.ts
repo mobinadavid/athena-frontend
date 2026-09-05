@@ -18,7 +18,6 @@ declare module "axios" {
 
 const SKIP_REFRESH_PATHS = [
   "/authentication/login",
-  "/authentication/register",
   "/authentication/recover-password",
   "/access-tokens/refresh",
 ];
@@ -90,7 +89,6 @@ function redirectToLogin() {
   useAuthStore.getState().clearSession();
   if (typeof window === "undefined") return;
   if (window.location.pathname.startsWith("/login")) return;
-  if (window.location.pathname.startsWith("/register")) return;
   if (window.location.pathname.startsWith("/recover-password")) return;
   if (window.location.pathname.startsWith("/two-fa")) return;
   window.location.href = "/login";
