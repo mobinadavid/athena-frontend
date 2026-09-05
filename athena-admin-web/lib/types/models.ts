@@ -11,27 +11,47 @@ export interface AccessToken {
   deleted_at?: string | null;
 }
 
+export interface LocalizedTitle {
+  en?: string;
+  fa?: string;
+  [key: string]: string | undefined;
+}
+
+export interface Permission {
+  id: number;
+  uuid: string;
+  name: string;
+  title: LocalizedTitle;
+  created_at: string;
+}
+
 export interface PermissionGroup {
   id: number;
   uuid: string;
   name: string;
-  title?: string;
-  description?: string;
+  title: LocalizedTitle | string;
+  description: string;
+  is_active: boolean;
+  permissions?: Permission[];
+  created_at: string;
 }
 
-export interface RoleModel {
+export interface Role {
   id: number;
   uuid: string;
   name: string;
   title: string;
   description: string;
   is_active: boolean;
-  permission_groups?: PermissionGroup[];
-  permission_group_count?: number;
-  total_assignees?: number;
+  permission_groups: PermissionGroup[];
+  permission_group_count: number;
+  total_assignees: number;
+  created_at: string;
 }
 
-export interface AdminModel {
+export type RoleModel = Role;
+
+export interface AdminUser {
   id: number;
   uuid: string;
   is_active: boolean;
@@ -40,9 +60,14 @@ export interface AdminModel {
   username: string;
   mobile: string;
   email: string;
-  roles: RoleModel[];
+  roles: Role[];
+  all_ips_allowed?: boolean;
+  allowed_ips?: string[];
+  description?: string;
   created_at: string;
 }
+
+export type AdminModel = AdminUser;
 
 export interface UserModel {
   id: number;
@@ -64,6 +89,17 @@ export interface Blockchain {
   title: Record<string, string>;
   name: string;
   is_active: boolean;
+  created_at: string;
+}
+
+export interface BlockchainExplorer {
+  id: number;
+  uuid: string;
+  name: string;
+  base_url: string;
+  is_active: boolean;
+  is_default: boolean;
+  blockchains: Blockchain[] | string[];
   created_at: string;
 }
 
@@ -101,6 +137,7 @@ export interface PaymentRequest {
   id: number;
   uuid: string;
   user_id: number;
+  user?: UserModel;
   blockchain: Blockchain;
   blockchain_id: number;
   requested_count: number;
@@ -111,4 +148,24 @@ export interface PaymentRequest {
   wallet_addresses: WalletAddress[];
   deposits: Deposit[];
   created_at: string;
+}
+
+export interface DepositOverTimePoint {
+  date: string;
+  count: number;
+  amount: number;
+}
+
+export interface DepositByBlockchain {
+  blockchain: string;
+  count: number;
+  amount: number;
+}
+
+export interface AdminDashboardSummary {
+  payment_requests_by_status: Record<string, number>;
+  total_received_amount: number;
+  wallet_pool: { total: number; allocated: number; free: number };
+  deposits_over_time: DepositOverTimePoint[];
+  deposits_by_blockchain: DepositByBlockchain[];
 }
