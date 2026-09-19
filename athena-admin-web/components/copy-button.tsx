@@ -9,16 +9,18 @@ export function CopyButton({
   value,
   className,
   label = "Copy",
+  children,
 }: {
   value: string;
   className?: string;
   label?: string;
+  children?: React.ReactNode;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
-      size="icon-sm"
+      size={children ? "sm" : "icon-sm"}
       className={cn(className)}
       aria-label={label}
       onClick={async () => {
@@ -31,6 +33,7 @@ export function CopyButton({
       }}
     >
       <Copy className="size-3.5" />
+      {children}
     </Button>
   );
 }

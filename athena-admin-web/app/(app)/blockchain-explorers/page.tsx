@@ -20,32 +20,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ExplorerPayload } from "@/lib/api/explorers";
 import {
   useBlockchainOptions,
-  useCreateExplorer,
   useDeleteExplorer,
   useExplorers,
   useUpdateExplorer,
 } from "@/lib/hooks/use-admin-data";
 import type { BlockchainExplorer } from "@/lib/types/models";
-import { blockchainLabel, formatDate } from "@/lib/utils/format";
+import { blockchainLabel, explorerChainNames, formatDate } from "@/lib/utils/format";
 
 function chainNames(explorer: BlockchainExplorer) {
-  if (!explorer.blockchains) return [];
-  return explorer.blockchains.map((item) => (typeof item === "string" ? item : item.name));
+  return explorerChainNames(explorer);
 }
 
 export default function ExplorersPage() {
   const [page, setPage] = useState(1);
-  const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<BlockchainExplorer | null>(null);
   const list = useExplorers({ page, page_size: 10 });
   const chains = useBlockchainOptions();
-  const create = useCreateExplorer();
   const update = useUpdateExplorer();
   const remove = useDeleteExplorer();
   const items = list.data?.items ?? [];
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!editing) return;
     const form = new FormData(event.currentTarget);
     const selected = (chains.data ?? [])
       .filter((chain) => form.get(`chain_${chain.name}`) === "on")
@@ -57,9 +54,7 @@ export default function ExplorersPage() {
       is_default: form.get("is_default") === "on",
       blockchains: selected,
     };
-    if (editing) await update.mutateAsync({ uuid: editing.uuid, payload });
-    else await create.mutateAsync(payload);
-    setOpen(false);
+    await update.mutateAsync({ uuid: editing.uuid, payload });
     setEditing(null);
   }
 
@@ -67,8 +62,7 @@ export default function ExplorersPage() {
     <div>
       <PageHeader
         title="Blockchain Explorers"
-        description="Link explorers to one or more chains."
-        actions={<Button onClick={() => setOpen(true)}>New explorer</Button>}
+        description="Each explorer URL is used with a backend driver for that chain (Etherscan, Tronscan, BscScan, BtcScan). Adding a new explorer type requires a matching driver in the API. You can edit URLs and linked chains for the explorers that already exist."
       />
       <Card>
         <CardContent className="pt-4">
@@ -124,17 +118,14 @@ export default function ExplorersPage() {
       </Card>
 
       <Dialog
-        open={open || Boolean(editing)}
+        open={Boolean(editing)}
         onOpenChange={(next) => {
-          if (!next) {
-            setOpen(false);
-            setEditing(null);
-          }
+          if (!next) setEditing(null);
         }}
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit explorer" : "New explorer"}</DialogTitle>
+            <DialogTitle>Edit explorer</DialogTitle>
           </DialogHeader>
           <form className="grid gap-3" onSubmit={submit}>
             <Field label="Name">

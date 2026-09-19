@@ -10,9 +10,9 @@ import { AuthCard, Field } from "@/components/auth/auth-card";
 import { OtpInput } from "@/components/auth/otp-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { errorMessage } from "@/components/query-error";
 import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { isApiError } from "@/lib/types/api";
 import { isTwoFaRequired } from "@/lib/types/auth";
 import { applyApiFieldErrors } from "@/lib/utils/form-errors";
 import {
@@ -72,7 +72,7 @@ export default function TwoFaChallengePage() {
               await complete({ two_fa_code: values.two_fa_code });
             } catch (error) {
               applyApiFieldErrors(error, totpForm.setError);
-              toast.error(isApiError(error) ? error.message : "Invalid code");
+              toast.error(errorMessage(error, "Invalid code"));
             }
           })}
         >
@@ -104,7 +104,7 @@ export default function TwoFaChallengePage() {
               await complete({ recovery_code: values.recovery_code });
             } catch (error) {
               applyApiFieldErrors(error, recoveryForm.setError);
-              toast.error(isApiError(error) ? error.message : "Invalid recovery code");
+              toast.error(errorMessage(error, "Invalid recovery code"));
             }
           })}
         >

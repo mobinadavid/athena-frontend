@@ -49,6 +49,8 @@ export default function WalletAddressesPage() {
   const [allocateOpen, setAllocateOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [editing, setEditing] = useState<WalletAddress | null>(null);
+  const [allocateChain, setAllocateChain] = useState("");
+  const [manualChain, setManualChain] = useState("");
 
   const chains = useBlockchainOptions();
   const wallets = useWallets({
@@ -74,10 +76,21 @@ export default function WalletAddressesPage() {
         description="Pool of addresses that can be allocated to payment requests."
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => setManualOpen(true)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManualChain("");
+                setManualOpen(true);
+              }}
+            >
               Add Address Manually
             </Button>
-            <Button onClick={() => setAllocateOpen(true)}>
+            <Button
+              onClick={() => {
+                setAllocateChain("");
+                setAllocateOpen(true);
+              }}
+            >
               <Plus data-icon="inline-start" />
               Allocate Wallets
             </Button>
@@ -197,7 +210,10 @@ export default function WalletAddressesPage() {
                         <Button size="xs" variant="outline" asChild>
                           <Link href={`/wallet-addresses/${wallet.uuid}`}>Tx</Link>
                         </Button>
-                        <Button size="xs" variant="outline" onClick={() => setEditing(wallet)}>
+                        <Button size="xs" variant="outline" onClick={() => {
+                          setManualChain(wallet.blockchain?.name ?? "");
+                          setEditing(wallet);
+                        }}>
                           Edit
                         </Button>
                         <Button
@@ -236,8 +252,9 @@ export default function WalletAddressesPage() {
               event.preventDefault();
               const form = new FormData(event.currentTarget);
               const expected = String(form.get("expected_amount") || "");
+              if (!allocateChain) return;
               await allocate.mutateAsync({
-                blockchain: String(form.get("blockchain")),
+                blockchain: allocateChain,
                 count: Number(form.get("count")),
                 expected_amount: expected ? Number(expected) : undefined,
               });
@@ -245,14 +262,18 @@ export default function WalletAddressesPage() {
             }}
           >
             <Field label="Blockchain">
-              <select name="blockchain" className="h-8 w-full rounded-lg border bg-transparent px-2 text-sm" required>
-                <option value="">Select</option>
-                {(chains.data ?? []).map((chain) => (
-                  <option key={chain.uuid} value={chain.name}>
-                    {blockchainLabel(chain)}
-                  </option>
-                ))}
-              </select>
+              <Select value={allocateChain} onValueChange={setAllocateChain} required>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Select chain" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {(chains.data ?? []).map((chain) => (
+                    <SelectItem key={chain.uuid} value={chain.name}>
+                      {blockchainLabel(chain)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Count">
               <Input name="count" type="number" min={1} max={20} defaultValue={1} />
@@ -284,11 +305,12 @@ export default function WalletAddressesPage() {
             onSubmit={async (event) => {
               event.preventDefault();
               const form = new FormData(event.currentTarget);
+              if (!manualChain) return;
               const payload = {
                 wallet_address: String(form.get("wallet_address")),
                 name: String(form.get("name")),
                 webhook_url: String(form.get("webhook_url")),
-                blockchain_name: String(form.get("blockchain_name")),
+                blockchain_name: manualChain,
                 is_active: form.get("is_active") === "on",
               };
               if (editing) {
@@ -301,28 +323,37 @@ export default function WalletAddressesPage() {
             }}
           >
             <Field label="Name">
-              <Input name="name" defaultValue={editing?.name} required />
+              <Input name="name" defaultValue={editing?.name} placeholder="Treasury ETH 01" required />
             </Field>
             <Field label="Address">
-              <Input name="wallet_address" defaultValue={editing?.wallet_address} required />
+              <Input
+                name="wallet_address"
+                defaultValue={editing?.wallet_address}
+                placeholder="0x… or T…"
+                required
+              />
             </Field>
             <Field label="Webhook URL">
-              <Input name="webhook_url" defaultValue={editing?.webhook_url} required />
+              <Input
+                name="webhook_url"
+                defaultValue={editing?.webhook_url}
+                placeholder="https://example.com/webhook"
+                required
+              />
             </Field>
             <Field label="Blockchain">
-              <select
-                name="blockchain_name"
-                defaultValue={editing?.blockchain?.name}
-                className="h-8 w-full rounded-lg border bg-transparent px-2 text-sm"
-                required
-              >
-                <option value="">Select</option>
-                {(chains.data ?? []).map((chain) => (
-                  <option key={chain.uuid} value={chain.name}>
-                    {blockchainLabel(chain)}
-                  </option>
-                ))}
-              </select>
+              <Select value={manualChain} onValueChange={setManualChain} required>
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Select chain" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {(chains.data ?? []).map((chain) => (
+                    <SelectItem key={chain.uuid} value={chain.name}>
+                      {blockchainLabel(chain)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="is_active" defaultChecked={editing?.is_active ?? true} />

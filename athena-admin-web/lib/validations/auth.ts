@@ -51,7 +51,7 @@ export const disableTwoFaSchema = z
     recovery_code: z.string().optional(),
   })
   .refine((data) => Boolean(data.totp) || Boolean(data.recovery_code), {
-    message: "Enter an authenticator code or a recovery code",
+    message: "Enter a recovery code or an authenticator code",
     path: ["totp"],
   });
 

@@ -37,3 +37,11 @@ export function blockchainLabel(blockchain: {
   const title = localized(blockchain.title);
   return title !== "—" ? title : blockchain.name || blockchain.native_asset;
 }
+
+export function explorerChainNames(explorer: {
+  blockchains?: Array<string | { name: string }> | null;
+  Blockchains?: Array<string | { name: string }> | null;
+}) {
+  const chains = explorer.blockchains ?? explorer.Blockchains ?? [];
+  return chains.map((item) => (typeof item === "string" ? item : item.name)).filter(Boolean);
+}

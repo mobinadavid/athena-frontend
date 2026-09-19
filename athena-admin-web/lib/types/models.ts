@@ -99,7 +99,8 @@ export interface BlockchainExplorer {
   base_url: string;
   is_active: boolean;
   is_default: boolean;
-  blockchains: Blockchain[] | string[];
+  blockchains?: Blockchain[] | string[];
+  Blockchains?: Blockchain[] | string[];
   created_at: string;
 }
 

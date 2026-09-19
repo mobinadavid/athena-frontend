@@ -102,16 +102,16 @@ export default function UsersPage() {
             }}
           >
             <Field label="Mobile">
-              <Input name="mobile" required />
+              <Input name="mobile" placeholder="0912*******" required />
             </Field>
             <Field label="National identity code">
-              <Input name="national_identity_code" />
+              <Input name="national_identity_code" placeholder="0012345678" />
             </Field>
             <Field label="Password">
-              <Input name="password" type="password" required />
+              <Input name="password" type="password" placeholder="At least 8 characters" required />
             </Field>
             <Field label="Confirm password">
-              <Input name="password_confirmation" type="password" required />
+              <Input name="password_confirmation" type="password" placeholder="Repeat password" required />
             </Field>
             <DialogFooter>
               <Button type="submit" disabled={create.isPending}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminProfile } from "@/lib/hooks/use-auth";
 
@@ -15,7 +15,6 @@ export default function ProfilePage() {
       <Card className="max-w-xl">
         <CardHeader>
           <CardTitle>Account details</CardTitle>
-          <CardDescription>Loaded from POST /admins/get-profile.</CardDescription>
         </CardHeader>
         <CardContent>
           {profile.isLoading ? (

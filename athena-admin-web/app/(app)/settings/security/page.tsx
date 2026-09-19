@@ -7,8 +7,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { OtpInput } from "@/components/auth/otp-input";
 import { PasswordInput } from "@/components/auth/password-input";
+import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/layout/page-header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { errorMessage } from "@/components/query-error";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { authApi } from "@/lib/api/auth";
 import { useTwoFaStatus } from "@/lib/hooks/use-auth";
-import { isApiError } from "@/lib/types/api";
 import type { TwoFaEnableData } from "@/lib/types/auth";
 import { applyApiFieldErrors } from "@/lib/utils/form-errors";
 import {
@@ -39,6 +39,7 @@ export default function SecurityPage() {
   const status = useTwoFaStatus();
   const [setup, setSetup] = useState<TwoFaEnableData | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [confirmDisable, setConfirmDisable] = useState(false);
 
   const enable = useMutation({
     mutationFn: authApi.twoFaEnable,
@@ -47,7 +48,7 @@ export default function SecurityPage() {
       setRecoveryCodes(null);
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Could not start 2FA setup");
+      toast.error(errorMessage(error, "Could not start 2FA setup"));
     },
   });
 
@@ -101,13 +102,22 @@ export default function SecurityPage() {
                   toast.success("OTP sent");
                 } catch (error) {
                   applyApiFieldErrors(error, changeForm.setError);
-                  toast.error(isApiError(error) ? error.message : "Could not start password change");
+                  toast.error(errorMessage(error, "Could not start password change"));
                 }
               })}
             >
-              <PasswordInput placeholder="Current password" {...changeForm.register("current_password")} />
-              <PasswordInput placeholder="New password" {...changeForm.register("new_password")} />
-              <PasswordInput placeholder="Confirm new password" {...changeForm.register("new_password_confirmation")} />
+              <PasswordInput
+                placeholder="Current password"
+                {...changeForm.register("current_password")}
+              />
+              <PasswordInput
+                placeholder="New password (8+ chars)"
+                {...changeForm.register("new_password")}
+              />
+              <PasswordInput
+                placeholder="Confirm new password"
+                {...changeForm.register("new_password_confirmation")}
+              />
               {changeForm.formState.errors.new_password ? (
                 <p className="text-xs text-destructive">{changeForm.formState.errors.new_password.message}</p>
               ) : null}
@@ -127,7 +137,7 @@ export default function SecurityPage() {
                   toast.success("Password updated");
                 } catch (error) {
                   applyApiFieldErrors(error, changeOtpForm.setError);
-                  toast.error(isApiError(error) ? error.message : "Could not update password");
+                  toast.error(errorMessage(error, "Could not update password"));
                 }
               })}
             >
@@ -155,7 +165,7 @@ export default function SecurityPage() {
         <CardContent className="space-y-5">
           {status.isLoading ? <p className="text-sm text-muted-foreground">Checking status…</p> : null}
 
-          {!enabled && !setup ? (
+          {!enabled && !setup && !recoveryCodes ? (
             <Button onClick={() => enable.mutate()} disabled={enable.isPending}>
               {enable.isPending ? "Generating secret…" : "Enable two-factor"}
             </Button>
@@ -187,7 +197,7 @@ export default function SecurityPage() {
                     toast.success("Two-factor authentication is enabled");
                   } catch (error) {
                     applyApiFieldErrors(error, verify.setError);
-                    toast.error(isApiError(error) ? error.message : "Invalid code");
+                    toast.error(errorMessage(error, "Invalid code"));
                   }
                 })}
               >
@@ -207,47 +217,95 @@ export default function SecurityPage() {
           ) : null}
 
           {recoveryCodes ? (
-            <Alert>
-              <AlertTitle>Save these recovery codes now</AlertTitle>
-              <AlertDescription>
-                They will not be shown again. Each code can disable 2FA if you lose
-                your authenticator.
-                <ul className="mt-3 grid gap-1 font-mono text-foreground">
-                  {recoveryCodes.map((code) => (
-                    <li key={code}>{code}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
+            <div className="mx-auto max-w-md space-y-4 text-center">
+              <div className="space-y-2">
+                <h3 className="text-base font-semibold">Save these recovery codes now</h3>
+                <p className="text-sm text-muted-foreground">
+                  This is the only time they are shown. Store them offline. Each
+                  code can disable 2FA if you lose your authenticator. Anyone
+                  with a unused code can take over this account.
+                </p>
+              </div>
+              <ul className="grid gap-2 rounded-xl border bg-muted/40 p-4 font-mono text-sm">
+                {recoveryCodes.map((code) => (
+                  <li key={code} className="flex items-center justify-center gap-2">
+                    <span>{code}</span>
+                    <CopyButton value={code} label="Copy recovery code" />
+                  </li>
+                ))}
+              </ul>
+              <div className="flex justify-center">
+                <CopyButton value={recoveryCodes.join("\n")} label="Copy all recovery codes">
+                  Copy all codes
+                </CopyButton>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setRecoveryCodes(null)}
+              >
+                I have saved these codes
+              </Button>
+            </div>
           ) : null}
 
-          {enabled ? (
-            <form
-              className="grid max-w-sm gap-3"
-              onSubmit={disable.handleSubmit(async (values) => {
-                try {
-                  await authApi.twoFaDisable({
-                    totp: values.totp || undefined,
-                    recovery_code: values.recovery_code || undefined,
-                  });
-                  await queryClient.invalidateQueries({ queryKey: ["profile", "2fa", "status"] });
-                  toast.success("Two-factor authentication disabled");
-                  disable.reset();
-                } catch (error) {
-                  applyApiFieldErrors(error, disable.setError);
-                  toast.error(isApiError(error) ? error.message : "Could not disable 2FA");
-                }
-              })}
-            >
-              <Input placeholder="Authenticator code" {...disable.register("totp")} />
-              <Input placeholder="Or recovery code" {...disable.register("recovery_code")} />
-              {disable.formState.errors.totp ? (
-                <p className="text-xs text-destructive">{disable.formState.errors.totp.message}</p>
-              ) : null}
-              <Button type="submit" variant="destructive" disabled={disable.formState.isSubmitting}>
+          {enabled && !recoveryCodes ? (
+            confirmDisable ? (
+              <form
+                className="grid max-w-sm gap-3"
+                onSubmit={disable.handleSubmit(async (values) => {
+                  try {
+                    await authApi.twoFaDisable({
+                      totp: values.totp || undefined,
+                      recovery_code: values.recovery_code || undefined,
+                    });
+                    await queryClient.invalidateQueries({ queryKey: ["profile", "2fa", "status"] });
+                    toast.success("Two-factor authentication disabled");
+                    disable.reset();
+                    setConfirmDisable(false);
+                  } catch (error) {
+                    applyApiFieldErrors(error, disable.setError);
+                    toast.error(errorMessage(error, "Could not disable 2FA"));
+                  }
+                })}
+              >
+                <p className="text-sm text-muted-foreground">
+                  Confirm with a recovery code, or with a current authenticator
+                  code.
+                </p>
+                <Input
+                  placeholder="Recovery code"
+                  autoComplete="off"
+                  {...disable.register("recovery_code")}
+                />
+                <Input
+                  placeholder="Authenticator code (optional)"
+                  inputMode="numeric"
+                  {...disable.register("totp")}
+                />
+                {disable.formState.errors.totp ? (
+                  <p className="text-xs text-destructive">{disable.formState.errors.totp.message}</p>
+                ) : null}
+                <div className="flex gap-2">
+                  <Button type="submit" variant="destructive" disabled={disable.formState.isSubmitting}>
+                    Confirm disable
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setConfirmDisable(false);
+                      disable.reset();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <Button variant="destructive" onClick={() => setConfirmDisable(true)}>
                 Disable two-factor
               </Button>
-            </form>
+            )
           ) : null}
         </CardContent>
       </Card>

@@ -3,10 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { errorMessage } from "@/components/query-error";
 import { authApi } from "@/lib/api/auth";
 import { tokensApi } from "@/lib/api/tokens";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { isApiError } from "@/lib/types/api";
 import { isTwoFaRequired, type LoginResponse } from "@/lib/types/auth";
 
 function applyLoginResult(data: LoginResponse) {
@@ -46,7 +46,7 @@ export function useLogin() {
       router.replace("/dashboard");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Login failed");
+      toast.error(errorMessage(error, "Login failed"));
     },
   });
 }

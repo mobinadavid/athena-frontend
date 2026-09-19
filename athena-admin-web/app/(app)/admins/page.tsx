@@ -175,20 +175,20 @@ export default function AdminsPage() {
           <form className="grid max-h-[70vh] gap-3 overflow-y-auto" onSubmit={submit}>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="First name">
-                <Input name="first_name" defaultValue={editing?.first_name} required />
+                <Input name="first_name" defaultValue={editing?.first_name} placeholder="Sara" required />
               </Field>
               <Field label="Last name">
-                <Input name="last_name" defaultValue={editing?.last_name} required />
+                <Input name="last_name" defaultValue={editing?.last_name} placeholder="Karimi" required />
               </Field>
             </div>
             <Field label="Username">
-              <Input name="username" defaultValue={editing?.username} required />
+              <Input name="username" defaultValue={editing?.username} placeholder="admin.sara" required />
             </Field>
             <Field label="Mobile">
-              <Input name="mobile" defaultValue={editing?.mobile} required />
+              <Input name="mobile" defaultValue={editing?.mobile} placeholder="0912*******" required />
             </Field>
             <Field label={editing ? "Password (leave blank to keep)" : "Password"}>
-              <Input name="password" type="password" required={!editing} />
+              <Input name="password" type="password" placeholder="At least 8 characters" required={!editing} />
             </Field>
             <div>
               <p className="mb-2 text-sm font-medium">Roles</p>

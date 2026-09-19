@@ -2,10 +2,14 @@ import { isApiError } from "@/lib/types/api";
 
 export function errorMessage(error: unknown, fallback = "Something went wrong.") {
   if (isApiError(error)) {
-    if (error.statusCode === 403) {
+    const fieldErrors = error.errors
+      ? Object.values(error.errors).filter(Boolean).join(" ")
+      : "";
+    const combined = [error.message, fieldErrors].filter(Boolean).join(" — ");
+    if (error.statusCode === 403 && !combined) {
       return "You don't have permission for this.";
     }
-    return error.message || fallback;
+    return combined || fallback;
   }
   if (error instanceof Error && error.message) return error.message;
   return fallback;
