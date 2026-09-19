@@ -103,6 +103,7 @@ function createClient() {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      "Accept-Language": "en",
     },
   });
 
